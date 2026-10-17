@@ -287,5 +287,36 @@ case "$1" in
   locktest) cmd_locktest "$2";;
   restore)  cmd_restore;;
   ovltest)  cmd_ovltest "$2";;
+  sysinfo)  cmd_sysinfo;;
+  setgov)   cmd_setgov "$2";;
   *)        json 0 "unknown command";;
 esac
+
+# ---- Live system monitoring ----
+cmd_sysinfo() {
+  load_cfg
+  sh "$MODDIR/sysinfo.sh" all 2>/dev/null
+}
+
+cmd_setgov() {
+  load_cfg
+  node=""; gov=""
+  F="$DIR/.setgov"
+  printf '%s' "$1" | base64 -d > "$F" 2>/dev/null || { json 0 "bad payload"; return; }
+  while IFS= read -r line || [ -n "$line" ]; do
+    line=$(printf '%s' "$line" | tr -d '\r')
+    k=( {line%%=*}; v= ){line#*=}
+    case "$k" in node) node=$v;; gov) gov=$v;; esac
+  done < "$F"
+  rm -f "$F"
+  [ -n "$node" ] && [ -n "$gov" ] || { json 0 "missing node or gov"; return; }
+  case "$node" in
+    /sys/devices/system/cpu/cpufreq/policy*/scaling_governor|/sys/class/devfreq/*/governor) ;;
+    *) json 0 "path not allowed"; return;;
+  esac
+  res=$(sh "$MODDIR/sysinfo.sh" setgov "$node" "$gov")
+  case "$res" in
+    ok) json 1 "governor set to $gov";;
+    *)  json 0 "failed: $res";;
+  esac
+}

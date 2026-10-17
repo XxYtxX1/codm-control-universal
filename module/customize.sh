@@ -1,6 +1,6 @@
 #!/system/bin/sh
 SKIPUNZIP=0
-ui_print "- CODM Ultra Stretch v1.15-universal (companion app + stretch + CPU/GPU + FPS)"
+ui_print "- CODM Ultra Stretch v1.16-universal (companion app + stretch + CPU/GPU + FPS)"
 . "$MODPATH/common.sh"
 mkdir -p "$DIR"
 load_cfg
@@ -8,7 +8,7 @@ write_cfg
 ui_print "- Config: $DIR/config.conf"
 
 set_perm_recursive "$MODPATH" 0 0 0755 0644
-for f in service.sh api.sh fps.sh cpu_gpu.sh action.sh uninstall.sh; do
+for f in service.sh api.sh fps.sh cpu_gpu.sh sysinfo.sh action.sh uninstall.sh; do
   set_perm "$MODPATH/$f" 0 0 0755
 done
 set_perm "$MODPATH/webroot/cgi-bin/api.cgi" 0 0 0755

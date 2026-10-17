@@ -1,6 +1,6 @@
 id=codm_ultra_stretch
 name=CODM Ultra Stretch
-version=v1.15-universal
-versionCode=16
+version=v1.16-universal
+versionCode=17
 author=CODM Control Project
-description=Best-effort Android 6+ companion app + stretch/CPU-GPU/FPS module. Hardware controls depend on kernel support; reboot after install.
+description=Premium WebUI: stretch, real-time FPS, CPU/GPU monitor, governors, overlay. Hardware controls depend on kernel support.

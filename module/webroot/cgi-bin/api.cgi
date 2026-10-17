@@ -7,9 +7,9 @@ case "$HTTP_HOST" in ""|127.0.0.1:*|localhost:*) ;; *) deny "403 Forbidden" "bad
 
 BODY=""
 case "$QUERY_STRING" in
-  cmd=state|cmd=log|cmd=live|cmd=diag)
+  cmd=state|cmd=log|cmd=live|cmd=diag|cmd=sysinfo)
     [ "$REQUEST_METHOD" = "GET" ] || deny "405 Method Not Allowed" "GET only";;
-  cmd=save|cmd=test|cmd=restore|cmd=locktest|cmd=ovltest)
+  cmd=save|cmd=test|cmd=restore|cmd=locktest|cmd=ovltest|cmd=setgov)
     [ "$REQUEST_METHOD" = "POST" ] || deny "405 Method Not Allowed" "POST only"
     case "$CONTENT_TYPE" in application/x-codm-stretch*) ;; *) deny "415 Unsupported Media Type" "bad content type";; esac
     N=${CONTENT_LENGTH:-0}
