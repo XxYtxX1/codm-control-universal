@@ -1,0 +1,6 @@
+id=codm_ultra_stretch
+name=CODM Ultra Stretch
+version=v1.15-universal
+versionCode=16
+author=CODM Control Project
+description=Best-effort Android 6+ companion app and module. Hardware controls depend on kernel support; reboot after install.

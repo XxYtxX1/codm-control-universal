@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>CODM Ultra Stretch</title>
+<style>
+:root{--bg:#0b0d12;--c1:rgba(255,255,255,.075);--c2:rgba(255,255,255,.09);--ln:rgba(255,255,255,.14);--tx:#eef1f5;--mu:#9aa4b5;--ac:#ffb020;--ac2:#ff7a18;--ok:#39d98a;--bad:#ff5d5d;--warn:#ffb020;--glass:blur(14px) saturate(160%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{color-scheme:dark;background:var(--bg);min-height:100%}
+body{position:relative;isolation:isolate}
+/* colour field behind the glass. Static on purpose: an animated backdrop would force every blurred card to be redrawn each frame */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(70vmax 50vmax at 0% 0%,rgba(64,110,200,.55),transparent 60%),radial-gradient(60vmax 50vmax at 100% 25%,rgba(200,90,150,.40),transparent 60%),radial-gradient(70vmax 60vmax at 40% 100%,rgba(255,150,40,.28),transparent 62%),linear-gradient(180deg,#10141c,#0a0c11)}
+body{margin:0 auto;max-width:640px;color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px calc(112px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+h1{font-size:20px;margin:0;letter-spacing:.2px}
+h1 b{color:var(--ac)}
+.sub{color:var(--mu);font-size:12px}
+.pill{font-size:12px;font-weight:700;padding:6px 11px;border-radius:99px;background:var(--c2);border:1px solid var(--ln);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:#1f5a40;background:#12261d}
+.pill.bad{color:var(--bad);border-color:#5a2424;background:#2a1414}
+.pill.ac{color:var(--ac);border-color:#5a4210;background:#2a2010}
+.card{background:linear-gradient(155deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 60%,rgba(255,255,255,.07));border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.2),0 10px 30px rgba(0,0,0,.28);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);contain:layout style;content-visibility:auto}
+.card[hidden],[hidden]{display:none!important}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mu);margin:0 0 10px;font-weight:700}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.t{font-weight:600}.m{color:var(--mu);font-size:13px}
+code{background:var(--c2);padding:1px 5px;border-radius:5px;font-size:12px}
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;z-index:2}
+.sw span{position:absolute;inset:0;background:var(--c2);border:1px solid var(--ln);border-radius:99px;transition:background-color .16s ease,border-color .16s ease}
+.sw span:before{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#8e98a8;transition:transform .16s cubic-bezier(.2,.8,.2,1),background-color .16s ease}
+.sw input:checked+span{background:var(--ac);border-color:var(--ac)}
+.sw input:checked+span:before{transform:translateX(22px);background:#1a1200}
+.seg{display:flex;background:var(--c2);border-radius:12px;padding:3px;gap:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;color:var(--mu);padding:9px 4px;border-radius:9px;font-weight:600;font-size:13.5px;font-family:inherit;transition:background-color .16s ease,color .16s ease}
+.seg button.on{background:var(--ac);color:#1a1200}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--ln);background:var(--c2);color:var(--tx);padding:9px 14px;border-radius:99px;font-weight:600;font-size:14px;font-family:inherit;transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#1a1200}
+.grid2{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:10px}
+.grid2 .x{color:var(--mu);font-weight:700}
+label.f{display:block;color:var(--mu);font-size:12px;margin:0 0 4px}
+input[type=number],input[type=text]{width:100%;background:var(--c2);border:1px solid var(--ln);border-radius:10px;color:var(--tx);padding:11px 12px;font:inherit}
+input[type=number]:focus,input[type=text]:focus{outline:2px solid var(--ac);outline-offset:0;border-color:transparent}
+.game{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--ln)}
+.game:first-of-type{border-top:0;padding-top:0}
+.prev{display:flex;justify-content:center;margin:2px 0 10px}
+.prev svg{width:100%;max-width:300px;height:auto}
+.big{font-size:26px;font-weight:800;letter-spacing:.3px;text-align:center}
+.big small{font-size:13px;color:var(--mu);font-weight:600;display:block;letter-spacing:0;margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--ac);margin:6px 0 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.kv div:nth-child(odd){color:var(--mu)}
+.kv div:nth-child(even){text-align:right;font-weight:600;word-break:break-all}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+pre{margin:10px 0 0;max-height:260px;overflow:auto;background:rgba(0,0,0,.3);border:1px solid var(--ln);border-radius:10px;padding:10px;font-size:11.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:#b7c0cc}
+.link{background:none;border:0;color:var(--ac);font-weight:600;font-size:13px;font-family:inherit;padding:0}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(620px,calc(100% - 20px));display:flex;gap:8px;padding:10px;border-radius:22px;background:rgba(18,22,30,.6);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 34px rgba(0,0,0,.45);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);z-index:5}
+.btn{flex:1;padding:14px 8px;border-radius:13px;border:1px solid var(--ln);background:var(--c2);color:var(--tx);font-weight:700;font-size:14px;font-family:inherit}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5}
+.btn.pri{flex:1.5;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#1a1200;border:0}
+.btn.sm{padding:10px 8px;font-size:13px;width:100%;margin-top:12px}
+.dot{display:none;width:8px;height:8px;border-radius:50%;background:#1a1200;margin-left:6px;vertical-align:middle}
+.dirty .dot{display:inline-block}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:rgba(24,29,38,.8);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);border:1px solid var(--ln);color:var(--tx);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s cubic-bezier(.2,.8,.2,1);max-width:90%;text-align:center;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{border-color:#7a2d2d;color:#ffb3b3}
+.sep{height:1px;background:var(--ln);margin:14px 0}
+.lab{display:flex;justify-content:space-between;align-items:baseline;color:var(--mu);font-size:12px;margin:0 0 2px}
+.lab b{color:var(--tx);font-size:13px}
+.fpsbig{font-size:54px;font-weight:800;line-height:1;text-align:center;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.fpsbig small{font-size:15px;font-weight:700;color:var(--mu);letter-spacing:0;margin-left:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--c2);border:1px solid var(--ln);border-radius:11px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--mu)}
+.graph{margin-top:12px;background:rgba(0,0,0,.28);border:1px solid var(--ln);border-radius:10px}
+.graph svg{display:block;width:100%;height:84px}
+.note{background:rgba(74,58,18,.22);border:1px solid rgba(160,120,30,.35);border-radius:10px;padding:9px 11px;margin-top:10px;font-size:12.5px;color:#d9c48a}
+.ovprev{margin-top:12px;height:90px;border-radius:12px;background:linear-gradient(135deg,#243b2a,#1c2a3a 55%,#3a2c1c);position:relative;overflow:hidden;border:1px solid var(--ln)}
+.ovprev span{position:absolute;font:600 13px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#fff;padding:6px 10px;border-radius:6px;white-space:nowrap}
+details summary{cursor:pointer;color:var(--ac);font-weight:600;font-size:13px;margin-top:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>CODM <b>Ultra Stretch</b></h1><div class="sub" id="ver">connecting…</div></div>
+  <div class="pill" id="pill">…</div>
+</header>
+
+<section class="card" id="err" hidden>
+  <h2>Can't reach the module</h2>
+  <div class="m" id="errmsg"></div>
+  <div class="m" style="margin-top:10px">
+    • <b>KernelSU / MMRL / WebUI X:</b> open this from the module's <b>WebUI</b> button.<br>
+    • <b>Magisk:</b> reboot once after installing, then tap the module's <b>Action</b> button, or open <code>http://127.0.0.1:8088</code> in your browser.<br>
+    • Check <code>/data/adb/codm_stretch/log.txt</code> for errors.
+  </div>
+  <button class="btn" id="retry" style="margin-top:12px;width:100%">Retry</button>
+</section>
+
+<main id="app" hidden>
+
+  <section class="card">
+    <div class="row">
+      <div><div class="t">Auto-stretch</div><div class="m">Applies when CODM is on screen, restores when you leave</div></div>
+      <label class="sw"><input type="checkbox" id="en"><span></span></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <div><div class="t">Fill screen (no black bars)</div><div class="m">Needs the <b>CODM Stretch Hook</b> LSPosed module</div></div>
+      <label class="sw"><input type="checkbox" id="fill"><span></span></label>
+    </div>
+    <div class="m" id="hookTxt" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card" id="cpuGpuCard">
+    <h2>CPU / GPU control</h2>
+    <div class="row"><div><div class="t">Enable game-only frequency control</div><div class="m">Only applies while CODM is foreground; restores saved limits when you leave.</div></div><label class="sw"><input type="checkbox" id="cgEn"><span></span></label></div>
+    <div class="sep"></div><label class="f">Frequency ceiling profile</label>
+    <div class="seg" id="cgSeg"><button data-cg="balanced">Balanced · 85%</button><button data-cg="performance">Performance · 100%</button></div>
+    <div class="m" id="cgStatus">Waiting for device status…</div>
+    <div class="note">Device support varies. Only writable kernel frequency nodes are used. Unsupported controls are skipped; original values are restored when CODM closes. FPS limiting is disabled.</div>
+  </section>
+
+  <!-- Legacy FPS settings hidden; retained internally for backward compatibility. -->
+  <section class="card" hidden>
+    <h2>FPS lock</h2>
+    <div class="row">
+      <div><div class="t">Cap FPS in game</div><div class="m">Active only while CODM is on screen, restored when you leave</div></div>
+      <label class="sw"><input type="checkbox" id="fl"><span></span></label>
+    </div>
+    <div style="margin-top:14px" class="chips" id="capChips"></div>
+    <div class="grid2" id="capCustom" hidden style="grid-template-columns:1fr">
+      <input type="number" id="capIn" inputmode="numeric" min="15" max="240" placeholder="FPS (15–240)">
+    </div>
+    <div class="m" id="capPlan" style="margin-top:10px"></div>
+    <div class="sep"></div>
+    <label class="f">Method</label>
+    <div class="seg" id="methSeg">
+      <button data-m="display">Display lock</button>
+      <button data-m="both">Display + Game Mode</button>
+      <button data-m="gamemode">Game Mode only</button>
+    </div>
+    <div class="m" id="methTxt"></div>
+    <details>
+      <summary>Advanced: extra settings keys</summary>
+      <div style="margin-top:8px">
+        <input type="text" id="rr" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g. vendor_refresh_rate_key">
+        <div class="m" style="margin-top:6px">Extra <code>settings system</code> keys to set to the target Hz. Use <b>Diagnostics</b> at the bottom to list refresh-rate keys your ROM has.</div>
+      </div>
+    </details>
+    <button class="btn sm" id="bLock">Test lock 12s</button>
+  </section>
+
+  <!-- ====================== ON-SCREEN FPS COUNTER ====================== -->
+  <section class="card">
+    <h2>On-screen FPS counter</h2>
+    <div class="row">
+      <div><div class="t">Show FPS over CODM</div><div class="m">Real frames per second, updated twice a second, so you can see every stutter while you play</div></div>
+      <label class="sw"><input type="checkbox" id="fo"><span></span></label>
+    </div>
+    <div class="ovprev" id="ovPrev"><span id="ovPrevTxt"></span></div>
+    <label class="f" style="margin-top:12px">Position</label>
+    <div class="chips" id="posChips"></div>
+    <label class="f" style="margin-top:12px">Style</label>
+    <div class="seg" id="stySeg"><button data-s="compact">Compact</button><button data-s="full">Full (FPS · ms · stutter)</button></div>
+    <div class="lab"><span>Text size</span><b id="osv"></b></div>
+    <input type="range" id="os" min="8" max="40" step="1">
+    <div class="lab" style="margin-top:12px"><span>Background darkness</span><b id="obv"></b></div>
+    <input type="range" id="ob" min="0" max="100" step="5">
+    <div class="lab" style="margin-top:12px"><span>Distance from side edge</span><b id="oxv"></b></div>
+    <input type="range" id="ox" min="0" max="400" step="4">
+    <div class="lab" style="margin-top:12px"><span>Distance from top / bottom edge</span><b id="oyv"></b></div>
+    <input type="range" id="oy" min="0" max="400" step="4">
+    <div class="m" id="ovStat" style="margin-top:12px"></div>
+    <div style="margin-top:10px"><button class="link" id="bOvlTest">Test overlay (10 s)</button> <span class="m">shows a sample counter in your chosen corner right now, no game needed</span></div>
+    <div class="note">Green = near your target, amber = a bit under, red = well under. <b>Stutter</b> counts frames in the last second that took 1.5× longer than the average. Touches pass straight through the counter to the game.</div>
+  </section>
+
+  <!-- ============================ LIVE FPS ============================ -->
+  <section class="card">
+    <h2>Real FPS monitor</h2>
+    <div class="row" style="margin-bottom:12px">
+      <div><div class="t">Measure FPS in game</div><div class="m">Frames actually presented to the screen, read from SurfaceFlinger every second</div></div>
+      <label class="sw"><input type="checkbox" id="mon"><span></span></label>
+    </div>
+    <div class="fpsbig" id="fpsN">—<small>FPS</small></div>
+    <div class="m" id="fpsSub" style="text-align:center;margin-top:6px">Open CODM to start measuring</div>
+    <div class="stats">
+      <div class="stat"><b id="stFt">—</b><span>last frame ms</span></div>
+      <div class="stat"><b id="stWo">—</b><span>worst ms</span></div>
+      <div class="stat"><b id="stHz">—</b><span>panel Hz</span></div>
+      <div class="stat"><b id="stJk">—</b><span>stutters/s</span></div>
+    </div>
+    <div class="graph"><svg id="gfx" viewBox="0 0 300 84" preserveAspectRatio="none"></svg></div>
+    <div class="m" id="lastS" style="margin-top:10px"></div>
+    <div class="note" id="fpsNote">The graph and numbers update while this page is open. After each match the <b>Last session</b> line keeps avg / min / 1% low FPS.</div>
+  </section>
+
+  <section class="card">
+    <h2>Preview</h2>
+    <div class="prev"><svg id="svg" viewBox="0 0 300 135" role="img" aria-label="Stretch preview"></svg></div>
+    <div class="big" id="tgt">—<small id="tgtsub"></small></div>
+    <div class="m" id="bars" style="text-align:center;margin-top:8px"></div>
+  </section>
+
+  <section class="card">
+    <h2>Screen shape</h2>
+    <div class="seg"><button id="tabR">Ratio</button><button id="tabS">Exact size</button><button id="tabP">Percent</button></div>
+    <div id="paneR">
+      <div class="chips" id="chips"></div>
+      <div class="grid2" id="custom" hidden>
+        <input type="number" id="ra" inputmode="numeric" min="1" max="99" placeholder="4">
+        <span class="x">:</span>
+        <input type="number" id="rb" inputmode="numeric" min="1" max="99" placeholder="3">
+      </div>
+      <div class="m" style="margin-top:10px">Smaller ratio = wider-looking players. 4:3 is the classic ultra stretch; 5:4 is extreme.</div>
+    </div>
+    <div id="paneS">
+      <div class="grid2">
+        <div><label class="f" for="w">Width</label><input type="number" id="w" inputmode="numeric" placeholder="1080"></div>
+        <span class="x" style="margin-top:18px">×</span>
+        <div><label class="f" for="h">Height</label><input type="number" id="h" inputmode="numeric" placeholder="1440"></div>
+      </div>
+      <div class="m" style="margin-top:10px">Use your phone's natural (portrait) orientation, e.g. <code>1080×1440</code> on a 1080×2400 screen.</div>
+    </div>
+    <div id="paneP">
+      <div class="lab"><span>Width</span><b id="wpv"></b></div>
+      <input type="range" id="wp" min="30" max="100" step="1">
+      <div class="lab" style="margin-top:12px"><span>Height</span><b id="hpv"></b></div>
+      <input type="range" id="hp" min="30" max="100" step="1">
+      <div class="m" style="margin-top:10px">Each side as a % of the panel. Lower height = wider stretch. Width below 100% leaves bars on the sides unless the fill hook is on.</div>
+    </div>
+    <div style="margin-top:16px" id="fineWrap">
+      <label class="f" for="hs">Fine-tune stretch <span id="hsv"></span></label>
+      <input type="range" id="hs" step="2" min="1080" max="2400" value="1440">
+      <div class="row m" style="margin-top:2px"><span>Max stretch</span><span>None</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Render resolution</h2>
+    <div class="lab"><span>Scale on top of the shape above</span><b id="scv"></b></div>
+    <input type="range" id="sc" min="40" max="100" step="1">
+    <div class="chips" id="scChips" style="margin-top:10px"></div>
+    <div class="m" style="margin-top:10px">Lower scale = fewer pixels to draw = higher, steadier FPS and less heat. Image gets softer.</div>
+  </section>
+
+  <section class="card">
+    <h2>Density</h2>
+    <div class="seg" id="dmSeg">
+      <button data-d="stock">Stock</button>
+      <button data-d="auto">Auto</button>
+      <button data-d="manual">Manual</button>
+    </div>
+    <div id="denWrap" hidden><input type="number" id="dens" inputmode="numeric" placeholder="e.g. 420"></div>
+    <div class="m" style="margin-top:8px" id="densHint"></div>
+  </section>
+
+  <section class="card">
+    <h2>Timing</h2>
+    <div class="lab"><span>Wait after CODM opens before applying</span><b id="dlv"></b></div>
+    <input type="range" id="dl" min="0" max="30" step="1">
+    <div class="lab" style="margin-top:14px"><span>Keep applied after leaving (checks)</span><b id="grv"></b></div>
+    <input type="range" id="gr" min="1" max="10" step="1">
+    <div class="lab" style="margin-top:14px"><span>Check game every</span><b id="plv"></b></div>
+    <input type="range" id="pl" min="1" max="10" step="1">
+    <div class="m" style="margin-top:10px">A longer wait avoids resizing while the game is still loading. Keep-applied stops the screen flickering back when you glance at a notification. Faster checks react sooner but use a little more battery.</div>
+  </section>
+
+  <section class="card">
+    <h2>Games</h2>
+    <div id="games"></div>
+    <div style="margin-top:12px">
+      <label class="f" for="extra">Extra package names (space separated)</label>
+      <input type="text" id="extra" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="com.example.game">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Black bars on the sides?</h2>
+    <div class="m">Some ROMs keep the picture's shape when the display size changes, so they add black bars instead of stretching. <code>wm size</code> alone can't change that. The <b>CODM Stretch Hook</b> (LSPosed, System Framework scope) replaces the bars with a real stretch. Check <b>Fill hook</b> in Status: it must say <b>Loaded</b>. Press <b>Test 10s</b> to see the result on this page.</div>
+  </section>
+
+  <section class="card">
+    <h2>Status</h2>
+    <div class="kv">
+      <div>Service</div><div id="sSvc">—</div>
+      <div>State</div><div id="sMode">—</div>
+      <div>Panel</div><div id="sPhys">—</div>
+      <div>Refresh rates</div><div id="sRates">—</div>
+      <div>Current size</div><div id="sCur">—</div>
+      <div>FPS lock</div><div id="sLock">—</div>
+      <div>FPS sampler</div><div id="sSamp">—</div>
+      <div>Web server</div><div id="sWeb">—</div>
+      <div>Fill hook</div><div id="sHook">—</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row"><div class="t">Log</div><div><button class="link" id="diagBtn" style="margin-right:14px">Diagnostics</button><button class="link" id="logBtn">Show</button></div></div>
+    <pre id="log" hidden></pre>
+  </section>
+
+</main>
+
+<div class="bar" id="bar" hidden>
+  <button class="btn" id="bRestore">Restore</button>
+  <button class="btn" id="bTest">Test 10s</button>
+  <button class="btn pri" id="bSave">Save<span class="dot"></span></button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const MOD='/data/adb/modules/codm_ultra_stretch';
+const GAMES=[['com.activision.callofduty.shooter','Global','Activision'],['com.garena.game.codm','Garena','SEA / Garena'],['com.tencent.tmgp.cod','China','Tencent']];
+const PRE=[[1,1],[6,5],[5,4],[4,3],[3,2],[16,10],[16,9],[2,1]];
+const LBL={'2:1':'18:9','1:1':'1:1 square'};
+const CAPS=[30,45,60,72,90,120];
+const SCALES=[100,90,80,70,60,50];
+const METH={display:'Locks the panel to one refresh rate, so the game cannot go above it. It caps only at a rate your panel supports (60, 90, 120 ...); any other cap also uses Game Mode automatically.',
+  both:'Also asks Android Game Mode to limit the game to this FPS (lets you go below the panel rate, e.g. 30 on a 60 Hz lock). ROM-dependent. Switches the game to Performance mode while playing and back to Standard after.',
+  gamemode:'Only Android Game Mode, no panel change. Experimental, may be ignored by your ROM.'};
+const $=id=>document.getElementById(id);
+
+const S={en:true,fill:true,tab:'ratio',pre:'4:3',ra:4,rb:3,w:1080,h:1440,wp:100,hp:60,scale:100,dmode:'stock',dens:'',
+  games:[],extra:'',cg:false,cgp:'balanced',fl:false,cap:60,capPre:'60',meth:'display',mon:true,ovl:false,fo:true,opos:'tl',osty:'full',osz:14,obg:45,ox:24,oy:24,rr:'',delay:0,grace:2,poll:3};
+let phys=[1080,2400],physDens=0,rates=[],base='',timer=null,wired=false,logOpen=false,lockHz=0,live=null,lastSt=null;
+let lastSvg='',lastOv='',lastCap='';
+
+/* ---------- backend bridge ---------- */
+function ksuExec(cmd){
+  return new Promise((res,rej)=>{
+    const cb='cb_'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+    const t=setTimeout(()=>{delete window[cb];rej(new Error('timeout'))},20000);
+    window[cb]=(errno,out,err)=>{clearTimeout(t);delete window[cb];res({errno,out:out||'',err:err||''})};
+    try{window.ksu.exec(cmd,'{}',cb)}catch(e){clearTimeout(t);delete window[cb];rej(e)}
+  });
+}
+async function call(cmd,body){
+  if(window.ksu&&window.ksu.exec){               // KernelSU WebUI / MMRL / WebUI X
+    let c='sh '+MOD+'/api.sh '+cmd;
+    if(body!==undefined)c+=" '"+btoa(body)+"'";
+    const r=await ksuExec(c);
+    if(!r.out)throw new Error(r.err||'command failed');
+    return r.out;
+  }
+  const opt=body===undefined?{cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/x-codm-stretch'},body:btoa(body),cache:'no-store'};
+  const r=await fetch('cgi-bin/api.cgi?cmd='+cmd,opt);   // Magisk: localhost server
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.text();
+}
+async function jcall(cmd,body){
+  const t=await call(cmd,body);
+  try{return JSON.parse(t)}catch(e){throw new Error('Bad reply: '+String(t).slice(0,80))}
+}
+
+/* ---------- model ---------- */
+const known=GAMES.map(g=>g[0]);
+function fromServer(st){
+  lastSt=st;
+  S.en=!!st.enabled;S.fill=st.fill===undefined?true:!!st.fill;
+  const [a,b]=String(st.ratio).split(':').map(Number);
+  S.ra=a||4;S.rb=b||3;
+  S.pre=PRE.some(p=>p[0]===S.ra&&p[1]===S.rb)?S.ra+':'+S.rb:'custom';
+  S.tab=st.smode||'ratio';
+  if(st.size){const [w,h]=st.size.split('x').map(Number);S.w=w;S.h=h}
+  else{const tt=String(st.target).split('x').map(Number);if(tt[0]>0){S.w=tt[0];S.h=tt[1]}}
+  S.wp=st.wpct||100;S.hp=st.hpct||60;S.scale=st.scale||100;
+  S.dmode=st.dmode||'stock';S.dens=st.density||'';
+  const pk=String(st.packages).split(/\s+/).filter(Boolean);
+  S.games=pk.filter(p=>known.includes(p));
+  S.extra=pk.filter(p=>!known.includes(p)).join(' ');
+  S.cg=!!st.cpuGpuEnabled;S.cgp=st.cpuGpuProfile||'balanced';S.fl=false;S.cap=st.fpsCap||60;S.capPre=CAPS.includes(S.cap)?String(S.cap):'custom';
+  S.meth=st.fpsMethod||'display';S.mon=st.fpsMonitor===undefined?true:!!st.fpsMonitor;S.ovl=!!st.sfOverlay;
+  S.fo=st.fpsOverlay===undefined?true:!!st.fpsOverlay;S.opos=st.ovlPos||'tl';S.osty=st.ovlStyle||'full';S.osz=st.ovlSize||14;S.obg=st.ovlBg===undefined?45:st.ovlBg;S.ox=st.ovlX===undefined?24:st.ovlX;S.oy=st.ovlY===undefined?24:st.ovlY;S.rr=st.extraKeys||'';S.delay=st.applyDelay||0;S.grace=st.grace||2;S.poll=st.poll||3;
+}
+const pkgs=()=>[...S.games,...S.extra.split(/[\s,]+/).filter(Boolean)];
+function payload(){
+  return ['ENABLED='+(S.en?1:0),'FILL='+(S.fill?1:0),
+    'STRETCH_MODE='+S.tab,'STRETCH_RATIO='+S.ra+':'+S.rb,'STRETCH_SIZE='+(Number.isInteger(S.w)&&Number.isInteger(S.h)&&S.w>=100&&S.h>=100?S.w+'x'+S.h:''),
+    'STRETCH_WPCT='+S.wp,'STRETCH_HPCT='+S.hp,'RES_SCALE='+S.scale,
+    'DENSITY_MODE='+S.dmode,'STRETCH_DENSITY='+(S.dmode==='manual'?S.dens:''),
+    'PACKAGES='+pkgs().join(' '),
+    'CPU_GPU_ENABLED='+(S.cg?1:0),'CPU_GPU_PROFILE='+S.cgp,'FPS_LOCK=0','FPS_CAP='+S.cap,'FPS_METHOD='+S.meth,'FPS_MONITOR='+(S.mon?1:0),'SF_OVERLAY=0','FPS_OVERLAY='+(S.fo?1:0),'OVL_POS='+S.opos,'OVL_STYLE='+S.osty,'OVL_SIZE='+S.osz,'OVL_BG='+S.obg,'OVL_X='+S.ox,'OVL_Y='+S.oy,
+    'EXTRA_RR_KEYS='+S.rr.trim(),'APPLY_DELAY='+S.delay,'RESTORE_GRACE='+S.grace,'POLL='+S.poll].join('\n');
+}
+function check(){
+  const I=Number.isInteger,inr=(v,a,b)=>I(v)&&v>=a&&v<=b;
+  if(S.tab==='size'){if(!(inr(S.w,300,4096)&&inr(S.h,300,4096)))return 'Width and height must be 300–4096';}
+  else if(S.tab==='ratio'){if(!(inr(S.ra,1,99)&&inr(S.rb,1,99)))return 'Ratio numbers must be 1–99';}
+  else if(!(inr(S.wp,30,100)&&inr(S.hp,30,100)))return 'Percent must be 30–100';
+  if(!inr(S.scale,40,100))return 'Resolution scale must be 40–100';
+  if(S.dmode==='manual'&&!/^[1-9]\d{2}$/.test(String(S.dens)))return 'Density must be 3 digits (e.g. 420)';
+  if(!inr(S.cap,15,240))return 'FPS cap must be 15–240';
+  if(!inr(S.osz,8,40)||!inr(S.obg,0,100)||!inr(S.ox,0,1000)||!inr(S.oy,0,1000))return 'Overlay values out of range';
+  if(!/^[A-Za-z0-9_ ]*$/.test(S.rr))return 'Settings keys: letters, digits, _ only';
+  const p=pkgs();
+  if(!p.length)return 'Pick at least one game';
+  if(!p.every(x=>/^[A-Za-z0-9._]+$/.test(x)))return 'Invalid package name';
+  return '';
+}
+/* same math as the module's calc_size */
+function rawTarget(){
+  const [pw,ph]=phys;
+  if(S.tab==='size')return (S.w>0&&S.h>0)?[S.w,S.h]:null;
+  if(S.tab==='percent'){if(!(S.wp>0&&S.hp>0))return null;return [Math.floor(pw*S.wp/100),Math.floor(ph*S.hp/100)]}
+  let a=S.ra,b=S.rb;
+  if(!(a>0&&b>0))return null;
+  if(a<b)[a,b]=[b,a];
+  let w,h;
+  if(pw<=ph){w=pw;h=Math.floor(pw*a/b);if(h>ph)h=ph}
+  else{h=ph;w=Math.floor(ph*a/b);if(w>pw)w=pw}
+  return [w,h];
+}
+function target(){
+  const r=rawTarget();if(!r)return null;
+  let [w,h]=r;
+  w=Math.floor(w*S.scale/100);h=Math.floor(h*S.scale/100);
+  w=Math.max(300,Math.floor(w/2)*2);h=Math.max(300,Math.floor(h/2)*2);
+  return [w,h];
+}
+/* same math as pick_refresh / gm_fps */
+/* same rule as pick_refresh in common.sh */
+function pickR(cap){
+  if(!rates.length)return cap;
+  if(effMethod(cap)==='display'&&rates.includes(cap))return cap;
+  for(const r of rates)if(r>=cap&&r%cap===0)return r;
+  for(const r of rates)if(r>=cap)return r;
+  return rates[rates.length-1];
+}
+const gmFps=c=>{let o=30;for(const a of [30,45,60,90,120])if(a<=c)o=a;return o};
+/* same rule as eff_method in common.sh */
+function effMethod(cap){return(S.meth==='display'&&rates.length&&!rates.includes(cap))?'both':S.meth}
+const saveDraft=()=>{try{localStorage.setItem('codm_draft',JSON.stringify({t:Date.now(),s:S}))}catch(e){}};
+const loadDraft=()=>{try{const d=JSON.parse(localStorage.getItem('codm_draft')||'null');if(d&&Date.now()-d.t<300000)Object.assign(S,d.s)}catch(e){}};
+const clearDraft=()=>{try{localStorage.removeItem('codm_draft')}catch(e){}};
+
+/* ---------- UI ---------- */
+function setVal(id,v){const e=$(id);if(document.activeElement!==e)e.value=(v===undefined||v===null||Number.isNaN(v))?'':v}
+function build(){
+  const chips=$('chips');chips.innerHTML='';
+  PRE.forEach(([a,b])=>{const k=a+':'+b;const c=document.createElement('button');c.className='chip';c.textContent=LBL[k]||k;c.dataset.k=k;chips.appendChild(c)});
+  const cu=document.createElement('button');cu.className='chip';cu.textContent='Custom';cu.dataset.k='custom';chips.appendChild(cu);
+  const cc=$('capChips');cc.innerHTML='';
+  CAPS.forEach(c=>{const b=document.createElement('button');b.className='chip';b.textContent=c;b.dataset.k=String(c);cc.appendChild(b)});
+  const cb=document.createElement('button');cb.className='chip';cb.textContent='Custom';cb.dataset.k='custom';cc.appendChild(cb);
+  const pc=$('posChips');pc.innerHTML='';
+  [['tl','Top left'],['tc','Top center'],['tr','Top right'],['bl','Bottom left'],['br','Bottom right']].forEach(([k,t])=>{const b=document.createElement('button');b.className='chip';b.textContent=t;b.dataset.k=k;pc.appendChild(b)});
+  const sc=$('scChips');sc.innerHTML='';
+  SCALES.forEach(v=>{const b=document.createElement('button');b.className='chip';b.textContent=v+'%';b.dataset.v=String(v);sc.appendChild(b)});
+  const g=$('games');g.innerHTML='';
+  GAMES.forEach(([id,name,sub])=>{
+    const d=document.createElement('div');d.className='game';
+    d.innerHTML='<div><div class="t"></div><div class="m"></div></div><label class="sw"><input type="checkbox"><span></span></label>';
+    d.querySelector('.t').textContent=name;d.querySelector('.m').textContent=sub+' · '+id;
+    const c=d.querySelector('input');c.dataset.id=id;g.appendChild(d);
+  });
+}
+function drawPreview(){
+  const t=target(),[pw,ph]=phys;
+  const panelA=Math.max(pw,ph)/Math.min(pw,ph);
+  let tA=panelA;if(t&&t[0]>0&&t[1]>0)tA=Math.max(t[0],t[1])/Math.min(t[0],t[1]);
+  const fx=panelA/tA,W=290,H=W/panelA,ox=5,oy=(135-H)/2;
+  const ry=H*0.30,rx=Math.min(ry*fx,W*0.4),cx=ox+W/2,cy=oy+H/2;
+  const svgNow=
+    '<rect x="'+ox+'" y="'+oy+'" width="'+W+'" height="'+H+'" rx="12" fill="#10141a" stroke="#2b313b" stroke-width="2"/>'+
+    '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+ry+'" ry="'+ry+'" fill="none" stroke="#8e98a8" stroke-width="1.5" stroke-dasharray="4 4"/>'+
+    '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" fill="#ffb02022" stroke="#ffb020" stroke-width="2.5"/>'+
+    '<line x1="'+(cx-rx)+'" y1="'+cy+'" x2="'+(cx+rx)+'" y2="'+cy+'" stroke="#ffb02088"/>';
+  if(svgNow!==lastSvg){lastSvg=svgNow;$('svg').innerHTML=svgNow}
+  if(t&&t[0]>0){
+    $('tgt').firstChild.nodeValue=t[0]+'×'+t[1];
+    const px=Math.round(t[0]*t[1]/(pw*ph)*100);
+    $('tgtsub').textContent=(fx>1.005?'Everything looks '+Math.round((fx-1)*100)+'% wider':'No stretch')+' · '+tA.toFixed(2)+':1 · '+px+'% of the pixels';
+    const pl=Math.max(pw,ph),ps=Math.min(pw,ph),tl=Math.max(t[0],t[1]),ts=Math.min(t[0],t[1]);
+    const bar=Math.max(0,(pl-tl*(ps/ts))/2);
+    $('bars').textContent=bar>2?'Without the fill hook: ~'+Math.round(bar)+' px black bar each side ('+Math.round(bar*2/pl*100)+'% unused)':'Fills the whole screen';
+  }else{$('tgt').firstChild.nodeValue='—';$('tgtsub').textContent='Enter valid numbers';$('bars').textContent=''}
+  const hs=$('hs'),lo=Math.min(pw,ph),hi=Math.max(pw,ph),rt=rawTarget();
+  hs.min=lo;hs.max=hi;
+  if(rt&&document.activeElement!==hs){const v=pw<=ph?rt[1]:rt[0];hs.value=v;$('hsv').textContent='· '+v+' px'}
+}
+function drawOvPrev(){
+  const sp=$('ovPrevTxt'),box=$('ovPrev');
+  sp.style.cssText='';sp.style.fontSize=(S.osz*0.9)+'px';sp.style.background='rgba(0,0,0,'+(S.obg*0.5/100)+')';
+  const m=Math.round(Math.min(S.ox,60)/4),n=Math.round(Math.min(S.oy,60)/4);
+  const p=S.opos;sp.style[p[0]==='b'?'bottom':'top']=n+'px';
+  if(p[1]==='l')sp.style.left=m+'px';else if(p[1]==='r')sp.style.right=m+'px';else{sp.style.left='50%';sp.style.transform='translateX(-50%)'}
+  sp.style.opacity=S.fo?'1':'.35';
+  const oh=S.osty==='compact'?'<b style="color:#39d98a">118</b> FPS · 8.5 ms':'<b style="color:#39d98a">118</b> FPS<br>8.5 ms · max 11.2<br>120 Hz · <span style="color:#8e98a8">stutter 0</span>';
+  if(oh!==lastOv){lastOv=oh;sp.innerHTML=oh}
+}
+function capPlan(){
+  if(!(Number.isInteger(S.cap)&&S.cap>=15&&S.cap<=240))return 'Enter an FPS between 15 and 240.';
+  const txt='Panel supports '+(rates.length?rates.join(' / ')+' Hz':'unknown')+'. ';
+  const em=effMethod(S.cap),r=pickR(S.cap),isRate=!rates.length||rates.includes(S.cap);
+  if(em==='gamemode')return txt+'Game Mode limiter will request '+gmFps(S.cap)+' FPS (no panel change).';
+  const note=(S.meth==='display'&&em==='both')?S.cap+' is not a panel rate, so Game Mode is added to hold it. ':'';
+  if(em==='display')return txt+'Locks the panel to '+r+' Hz, so the game is held at '+S.cap+' FPS.';
+  return txt+note+'Panel locks to '+r+' Hz and the Game Mode limiter asks for '+gmFps(S.cap)+' FPS'+(gmFps(S.cap)!==S.cap?' (nearest value Game Mode accepts)':'')+'.';
+}
+function densHint(){
+  if(S.dmode==='stock')return 'UI size stays as your phone has it.';
+  if(S.dmode==='auto'){
+    if(S.scale>=100||!physDens)return 'Auto follows the render scale. At 100% nothing changes.';
+    return 'Auto: '+Math.floor(physDens*S.scale/100)+' dpi (stock '+physDens+' × '+S.scale+'%) keeps the HUD the same size at the lower resolution.';
+  }
+  return 'Fixed density while in game. Stock is restored when you leave.';
+}
+function render(){
+  $('en').checked=S.en;$('fill').checked=S.fill;
+  ['R','S','P'].forEach(k=>$('tab'+k).classList.toggle('on',S.tab==={R:'ratio',S:'size',P:'percent'}[k]));
+  $('paneR').hidden=S.tab!=='ratio';$('paneS').hidden=S.tab!=='size';$('paneP').hidden=S.tab!=='percent';
+  $('fineWrap').hidden=S.tab==='percent';
+  document.querySelectorAll('#chips .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===S.pre));
+  $('custom').hidden=S.pre!=='custom';
+  setVal('ra',S.ra);setVal('rb',S.rb);setVal('w',S.w);setVal('h',S.h);setVal('dens',S.dens);setVal('extra',S.extra);setVal('rr',S.rr);
+  $('wp').value=S.wp;$('hp').value=S.hp;$('wpv').textContent=S.wp+'%  ·  '+Math.floor(phys[0]*S.wp/100)+' px';$('hpv').textContent=S.hp+'%  ·  '+Math.floor(phys[1]*S.hp/100)+' px';
+  $('sc').value=S.scale;$('scv').textContent=S.scale+'%';
+  document.querySelectorAll('#scChips .chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===S.scale));
+  document.querySelectorAll('#dmSeg button').forEach(b=>b.classList.toggle('on',b.dataset.d===S.dmode));
+  $('denWrap').hidden=S.dmode!=='manual';$('densHint').textContent=densHint();
+  document.querySelectorAll('#games input').forEach(c=>{c.checked=S.games.includes(c.dataset.id)});
+  $('dl').value=S.delay;$('dlv').textContent=S.delay?S.delay+' s':'immediately';
+  $('gr').value=S.grace;$('grv').textContent=S.grace*S.poll+' s';
+  $('pl').value=S.poll;$('plv').textContent=S.poll+' s';
+  $('fl').checked=false;$('mon').checked=S.mon;
+  $('cgEn').checked=S.cg;document.querySelectorAll('#cgSeg button').forEach(b=>b.classList.toggle('on',b.dataset.cg===S.cgp));
+  if(lastSt){const q=lastSt.cpuGpuStatus||'No CPU/GPU profile active';$('cgStatus').textContent=q.replace(/;/g,' · ')}
+  $('fo').checked=S.fo;
+  document.querySelectorAll('#posChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===S.opos));
+  document.querySelectorAll('#stySeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===S.osty));
+  $('os').value=S.osz;$('osv').textContent=S.osz+' sp';$('ob').value=S.obg;$('obv').textContent=S.obg+'%';
+  $('ox').value=S.ox;$('oxv').textContent=S.ox+' px';$('oy').value=S.oy;$('oyv').textContent=S.oy+' px';
+  drawOvPrev();
+  document.querySelectorAll('#capChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===S.capPre));
+  $('capCustom').hidden=S.capPre!=='custom';setVal('capIn',S.cap);
+  document.querySelectorAll('#methSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.meth));
+  $('methTxt').textContent=METH[S.meth];
+  const cp=capPlan();if(cp!==lastCap){lastCap=cp;$('capPlan').innerHTML=cp}
+  drawPreview();
+  $('bar').classList.toggle('dirty',payload()!==base);
+}
+let frameReq=0;
+/* sliders fire 60-120 events a second: coalesce them into one update per screen refresh */
+function changed(){changedSoon()}
+function changedSoon(){
+  saveDraft();
+  if(frameReq)return;
+  frameReq=requestAnimationFrame(()=>{frameReq=0;render()});
+}
+const num=v=>v===''?NaN:parseInt(v,10);
+
+function wire(){
+  if(wired)return;wired=true;
+  $('en').onchange=e=>{S.en=e.target.checked;changed()};
+  $('fill').onchange=e=>{S.fill=e.target.checked;changed()};
+  $('tabR').onclick=()=>{S.tab='ratio';changed()};
+  $('tabS').onclick=()=>{
+    if(S.tab!=='size'){const t=rawTarget();if(t){S.w=t[0];S.h=t[1]}}
+    S.tab='size';changed();
+  };
+  $('tabP').onclick=()=>{
+    if(S.tab!=='percent'){const t=rawTarget();if(t){S.wp=Math.min(100,Math.max(30,Math.round(t[0]/phys[0]*100)));S.hp=Math.min(100,Math.max(30,Math.round(t[1]/phys[1]*100)))}}
+    S.tab='percent';changed();
+  };
+  $('chips').onclick=e=>{
+    const c=e.target.closest('.chip');if(!c)return;
+    S.pre=c.dataset.k;
+    if(S.pre!=='custom'){const [a,b]=S.pre.split(':').map(Number);S.ra=a;S.rb=b}
+    changed();
+  };
+  $('ra').oninput=e=>{S.ra=num(e.target.value);changed()};
+  $('rb').oninput=e=>{S.rb=num(e.target.value);changed()};
+  $('w').oninput=e=>{S.w=num(e.target.value);changed()};
+  $('h').oninput=e=>{S.h=num(e.target.value);changed()};
+  $('wp').oninput=e=>{S.wp=num(e.target.value);changedSoon()};
+  $('hp').oninput=e=>{S.hp=num(e.target.value);changedSoon()};
+  $('hs').oninput=e=>{
+    const v=parseInt(e.target.value,10),[pw,ph]=phys;
+    if(pw<=ph){S.w=pw;S.h=v}else{S.h=ph;S.w=v}
+    S.tab='size';$('hsv').textContent='· '+v+' px';changedSoon();
+  };
+  $('sc').oninput=e=>{S.scale=num(e.target.value);changedSoon()};
+  $('scChips').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;S.scale=+c.dataset.v;changed()};
+  $('dmSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.dmode=b.dataset.d;changed()};
+  $('dens').oninput=e=>{S.dens=e.target.value.trim();changed()};
+  $('extra').oninput=e=>{S.extra=e.target.value;changed()};
+  $('games').onchange=e=>{
+    const id=e.target.dataset.id;if(!id)return;
+    S.games=S.games.filter(x=>x!==id);if(e.target.checked)S.games.push(id);changed();
+  };
+  $('cgEn').onchange=e=>{S.cg=e.target.checked;changed()};
+  $('cgSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.cgp=b.dataset.cg;changed()};
+  $('fl').onchange=e=>{S.fl=false;changed()};
+  $('mon').onchange=e=>{S.mon=e.target.checked;changed()};
+  $('fo').onchange=e=>{S.fo=e.target.checked;changed()};
+  $('posChips').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;S.opos=c.dataset.k;changed()};
+  $('stySeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.osty=b.dataset.s;changed()};
+  $('os').oninput=e=>{S.osz=num(e.target.value);changedSoon()};
+  $('ob').oninput=e=>{S.obg=num(e.target.value);changedSoon()};
+  $('ox').oninput=e=>{S.ox=num(e.target.value);changedSoon()};
+  $('oy').oninput=e=>{S.oy=num(e.target.value);changedSoon()};
+  $('capChips').onclick=e=>{
+    const c=e.target.closest('.chip');if(!c)return;
+    S.capPre=c.dataset.k;if(S.capPre!=='custom')S.cap=+S.capPre;changed();
+  };
+  $('capIn').oninput=e=>{S.cap=num(e.target.value);changed()};
+  $('methSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.meth=b.dataset.m;changed()};
+  $('rr').oninput=e=>{S.rr=e.target.value;changed()};
+  $('dl').oninput=e=>{S.delay=num(e.target.value);changedSoon()};
+  $('gr').oninput=e=>{S.grace=num(e.target.value);changedSoon()};
+  $('pl').oninput=e=>{S.poll=num(e.target.value);changedSoon()};
+  $('bSave').onclick=()=>act('save');
+  $('bTest').onclick=()=>act('test');
+  $('bLock').onclick=()=>act('locktest');
+  $('bRestore').onclick=()=>act('restore');
+  $('bOvlTest').onclick=async()=>{
+    try{const e=check();if(e){toast(e,true);return}
+      const r=await jcall('ovltest',payload());toast(r.msg||(r.ok?'Overlay test running':'Failed'),!r.ok)}
+    catch(e){toast(String(e.message||e),true)}
+  };
+  $('logBtn').onclick=()=>{delete $('log').dataset.diag;logOpen=!logOpen;$('log').hidden=!logOpen;$('logBtn').textContent=logOpen?'Hide':'Show';if(logOpen)loadLog()};
+  $('diagBtn').onclick=async()=>{
+    logOpen=true;$('log').hidden=false;$('logBtn').textContent='Hide';$('log').textContent='Collecting…';
+    try{$('log').textContent=(await call('diag')).trim()}catch(e){$('log').textContent=String(e.message||e)}
+    $('log').dataset.diag='1';
+  };
+  $('retry').onclick=init;
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+}
+let toastT;
+function toast(msg,bad){const t=$('toast');t.textContent=msg;t.className='toast show'+(bad?' err':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',2800)}
+
+async function act(kind){
+  const btns=['bSave','bTest','bRestore','bLock'].map($);
+  try{
+    if(kind!=='restore'){const e=check();if(e){toast(e,true);return}}
+    btns.forEach(b=>b.disabled=true);
+    const r=await jcall(kind,kind==='restore'?'':payload());
+    if(!r.ok){toast(r.msg||'Failed',true);return}
+    if(kind==='save'){base=payload();clearDraft();toast('Saved · applies within a few seconds')}
+    else if(kind==='test'){toast('Testing for 10 seconds…')}
+    else if(kind==='locktest'){toast(r.msg||'Lock test running')}
+    else toast('Restored · paused until you close the game');
+  }catch(e){toast(String(e.message||e),true)}
+  finally{btns.forEach(b=>b.disabled=false);render();refresh()}
+}
+
+/* ---------- status + live ---------- */
+function renderStatus(st){
+  lastSt=st;
+  const p=$('pill');let txt,cls='';
+  if(!st.service){txt='Service off';cls='bad'}
+  else if(st.mode==='game'){txt='Stretched · in game';cls='ok'}
+  else if(st.mode==='test'){txt='Testing…';cls='ac'}
+  else if(st.lockActive){txt='FPS locked';cls='ok'}
+  else if(!st.enabled&&!st.fpsLock){txt='Disabled'}
+  else txt='Ready · waiting for CODM';
+  p.textContent=txt;p.className='pill '+cls;
+  const set=(id,v,c)=>{const e=$(id);e.textContent=v;e.className=c||''};
+  set('sSvc',st.service?'Running':'Not running (reboot)',st.service?'ok':'bad');
+  set('sMode',({idle:'Idle',game:'In game · stretched',test:'Testing'})[st.mode]||st.mode);
+  set('sPhys',String(st.phys).replace('x','×')+(st.physDens?' · '+st.physDens+' dpi':''));
+  set('sRates',(st.rates&&st.rates.length)?st.rates.join(' / ')+' Hz':'unknown (see Diagnostics)',(st.rates&&st.rates.length)?'':'warn');
+  set('sCur',String(st.cur).replace('x','×'));
+  set('sLock',st.lockActive?'Active · '+st.lockHz+' Hz':(st.fpsLock?'Armed · waits for CODM':'Off'),st.lockActive?'ok':'');
+  set('sSamp',st.sampler?(st.fpsMonitor?'Running':'Paused (monitor off)'):'Not running (reboot)',st.sampler&&st.fpsMonitor?'ok':(st.sampler?'':'bad'));
+  set('sWeb',st.web?'127.0.0.1:'+st.port:'Off',st.web?'ok':'');
+  const hk={loaded:['Loaded','ok','Hook loaded. While CODM is stretched the picture fills the whole screen.'],
+    stale:['Not loaded this boot','bad','Hook app found, but it did not load this boot. In LSPosed enable it with the System Framework scope, then reboot.'],
+    error:['Error: '+(st.hookMsg||'unknown'),'bad','Hook loaded but could not attach: '+(st.hookMsg||'unknown')+'. Send me the log (Log card below).'],
+    none:['Not installed','','Hook not detected. Install the CODM Stretch Hook APK, enable it in LSPosed for System Framework, then reboot.']}[st.hook]||['—','',''];
+  set('sHook',hk[0],hk[1]);
+  $('hookTxt').textContent=st.fill?hk[2]:'Fill is switched off, so only the plain resize is used (black bars on ROMs that keep aspect).';
+  $('bTest').disabled=st.mode==='test';
+  if(st.physDens){physDens=+st.physDens}
+  $('ver').textContent='v'+String(st.version).replace(/^v/,'')+' · '+(st.model||'device')+(st.android?' · Android '+st.android:'')+' · '+(window.ksu&&window.ksu.exec?'KernelSU WebUI':'browser');
+  const ov=$('ovStat');
+  if(!st.ovlApp)ov.innerHTML='<span class="bad">Overlay app not installed.</span> Reboot once (the module also installs it as a system app on boot).'+(st.ovlInstallMsg?'<br><span class="m">Android said: '+st.ovlInstallMsg+'</span>':'')+'<br>Still not working? Send me this screen.';
+  else if(!st.ovlPerm)ov.innerHTML='<span class="warn">Overlay app installed but “Display over other apps” is not allowed.</span> Settings → Apps → <b>CODM FPS</b> → Display over other apps → Allow.';
+  else ov.innerHTML='<span class="ok">Overlay app ready</span>'+(st.ovlRunning?' · running now':' · starts when CODM opens')+'. Save, then open CODM.'+(st.ovlStartMsg&&/rror|not allowed|denied/i.test(st.ovlStartMsg)?'<br><span class="bad">Start failed: '+st.ovlStartMsg+'</span>':'');
+  if(JSON.stringify(rates)!==JSON.stringify(st.rates||[])){rates=st.rates||[];render()}
+}
+/* green >= 90% of the target, amber >= 70%, red below. No frames is grey, never red */
+function fpsColor(f,ref){
+  if(!(f>0))return 'var(--mu)';
+  if(!ref)return 'var(--tx)';
+  const r=f/ref;return r>=0.9?'var(--ok)':(r>=0.7?'var(--warn)':'var(--bad)');
+}
+const ERRT={'no-awk':'Sampler needs a busybox with awk (Magisk/KernelSU busybox) - not found.','no-layers':'SurfaceFlinger returned no layers (blocked on this ROM?).','no-layer-match':'No SurfaceFlinger layer matches the CODM package name.','no-frames':'Layers found, but neither frame source (latency, TimeStats) returned frames yet.','monitor-off':'Monitor is switched off.'};
+function renderLive(lv){
+  live=lv;
+  if(lv.ts)lv.age=Date.now()/1000-lv.ts;
+  const st=lastSt||{};
+  const fresh=lv.age>=0&&lv.age<=4&&lv.inGame;
+  const ref=(st.lockActive&&st.fpsCap)?st.fpsCap:(lv.hz||lv.hzNow);
+  const n=$('fpsN');
+  if(fresh&&lv.fps>0){
+    n.firstChild.nodeValue=Math.round(lv.fps);n.style.color=fpsColor(lv.fps,ref);
+    $('fpsSub').textContent='Measured on '+(lv.layer?lv.layer.replace(/^SurfaceView\[|\]\(BLAST\)#\d+$|\)#\d+$/g,'').split('/')[0]:'game layer')+(lv.method==='ts'?' · frame counter (no stutter data on this ROM)':'')+(st.lockActive?' · lock target '+st.fpsCap:'');
+  }else if(lv.inGame&&lv.age>=0&&lv.age<=4){
+    if(lv.layer){
+      n.firstChild.nodeValue='0';n.style.color='var(--mu)';
+      $('fpsSub').textContent='No new frames in the last second (menu, loading or paused screen)';
+    }else{
+      n.firstChild.nodeValue='—';n.style.color='var(--mu)';
+      $('fpsSub').textContent=(ERRT[lv.err]||'Starting… looking for the game layer')+(lv.err?' Open Diagnostics and send it to me.':'');
+    }
+  }else{
+    n.firstChild.nodeValue='—';n.style.color='var(--tx)';
+    $('fpsSub').textContent=lv.inGame?'Starting…':'Open CODM to start measuring · panel is at '+(lv.hzNow||'?')+' Hz now';
+  }
+  if(fresh&&lv.capNote&&st.lockActive)$('fpsSub').textContent+=' · the ROM is not holding the cap ('+lv.capNote+' FPS measured). Send Diagnostics.';
+  $('stFt').textContent=fresh&&lv.frameMs&&!(lv.frameAge>250)?lv.frameMs.toFixed(2):'—';
+  $('stWo').textContent=fresh&&lv.worst&&lv.method!=='ts'?lv.worst.toFixed(1):'—';
+  $('stHz').textContent=(lv.hzNow||lv.hz||'—');
+  $('stJk').textContent=fresh&&lv.method!=='ts'?String(lv.jank):'—';
+  drawGraph(fresh?lv.hist:[],st);
+  const l=lv.last;
+  $('lastS').textContent=l?'Last session ('+Math.round(l.secs)+' s): avg '+l.avg.toFixed(1)+' · min '+l.min.toFixed(1)+' · 1% low '+l.p1.toFixed(1)+' · max '+l.max.toFixed(1)+(l.cap?' · cap was '+l.cap:''):'No finished session yet.';
+}
+function drawGraph(h,st){
+  const g=$('gfx');
+  if(!h||h.length<2){g.innerHTML='<text x="150" y="46" fill="#8e98a8" font-size="11" text-anchor="middle">waiting for frames…</text>';return}
+  const cap=st.lockActive?st.fpsCap:0;
+  const top=Math.max(cap,live&&live.hzNow||0,...h)*1.1||60;
+  const W=300,H=84,dx=W/Math.max(59,h.length-1);
+  const y=v=>H-4-(v/top)*(H-10);
+  const pts=h.map((v,i)=>((W-(h.length-1)*dx)+i*dx).toFixed(1)+','+y(v).toFixed(1)).join(' ');
+  let s='';
+  [30,60,90,120,144].filter(v=>v<top).forEach(v=>{s+='<line x1="0" x2="'+W+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#2b313b" stroke-width="1"/><text x="3" y="'+(y(v)-2)+'" fill="#586070" font-size="8">'+v+'</text>'});
+  if(cap)s+='<line x1="0" x2="'+W+'" y1="'+y(cap)+'" y2="'+y(cap)+'" stroke="#ffb020" stroke-width="1" stroke-dasharray="4 3"/>';
+  s+='<polyline points="'+pts+'" fill="none" stroke="#39d98a" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+  g.innerHTML=s;
+}
+async function loadLog(){try{$('log').textContent=(await call('log')).trim()||'(empty)'}catch(e){$('log').textContent=String(e.message||e)}}
+async function refresh(){
+  if(document.hidden)return;
+  try{
+    const st=await jcall('state');renderStatus(st);
+    lastFull=await jcall('live');fastFail=0;renderLive(lastFull);
+    if(logOpen&&!$('log').dataset.diag)loadLog();
+  }catch(e){}
+}
+
+/* ---------- live polling ----------
+   The module writes live.json every ~120 ms while a game is on screen. This page reads it every
+   150 ms (400 ms through the KernelSU bridge, which has no file access). The full call still runs
+   every 2 s for the graph, last-session stats and status. */
+let lastFull=null,fastFail=0,fastOff=0,liveT=0;
+const isHttp=()=>!(window.ksu&&window.ksu.exec);
+function scheduleLive(ms){clearTimeout(liveT);liveT=setTimeout(pollLive,ms)}
+async function pollLive(){
+  let next=1000;
+  try{
+    if(document.hidden){scheduleLive(1000);return}
+    let lv=null,fast=false;
+    if(isHttp()&&lastFull&&Date.now()>=fastOff){
+      try{
+        const r=await fetch('live.json?t='+Date.now(),{cache:'no-store'});
+        if(!r.ok)throw new Error(String(r.status));
+        lv=Object.assign({},lastFull,await r.json());fastFail=0;fast=true;
+      }catch(e){
+        lv=null;
+        // no file yet (game not started) or unreadable: use the CGI for 5 s, then try the file again
+        if(++fastFail>=3){fastOff=Date.now()+5000;fastFail=0}
+      }
+    }
+    if(!lv){lastFull=await jcall('live');lv=lastFull}
+    renderLive(lv);
+    next=lv.inGame?(fast?150:400):1000;
+  }catch(e){}
+  scheduleLive(next);
+}
+
+async function init(){
+  clearInterval(timer);
+  try{
+    const st=await jcall('state');
+    const pp=String(st.phys).split('x').map(Number);
+    if(pp[0]>0&&pp[1]>0)phys=pp;
+    physDens=+st.physDens||0;rates=st.rates||[];
+    fromServer(st);
+    wire();build();
+    base=payload();            // server state = "saved" baseline
+    loadDraft();               // restore unsaved edits (e.g. if the page reloaded during a test)
+    $('err').hidden=true;$('app').hidden=false;$('bar').hidden=false;
+    render();renderStatus(st);
+    try{lastFull=await jcall('live');renderLive(lastFull)}catch(e){}
+    timer=setInterval(refresh,2000);scheduleLive(150);
+  }catch(e){
+    $('app').hidden=true;$('bar').hidden=true;$('err').hidden=false;
+    $('errmsg').textContent=String(e.message||e);
+    $('ver').textContent='not connected';
+    wire();
+  }
+}
+init();
+})();
+</script>
+</body>
+</html>

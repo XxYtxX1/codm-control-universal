@@ -1,0 +1,36 @@
+name: Build CODM Control APK and Universal Module ZIP
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build Android app
+        run: gradle --no-daemon assembleRelease
+      - name: Package APK into KernelSU/Magisk module
+        run: |
+          mkdir -p module/system/app/CODMControl
+          cp app/build/outputs/apk/release/app-release-unsigned.apk module/system/app/CODMControl/CODMControl.apk
+          chmod 0644 module/system/app/CODMControl/CODMControl.apk
+          cd module
+          zip -qr ../CODM_Ultra_Stretch_v1_15_Universal_App.zip .
+          cd ..
+          cp app/build/outputs/apk/release/app-release-unsigned.apk CODM_Control.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CODM-Control-Universal-App-and-Module
+          path: |
+            CODM_Control.apk
+            CODM_Ultra_Stretch_v1_15_Universal_App.zip
