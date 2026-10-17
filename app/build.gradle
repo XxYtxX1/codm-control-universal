@@ -3,12 +3,39 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.codm.ultrastretch'
     compileSdk 35
+
     defaultConfig {
         applicationId 'com.codm.ultrastretch'
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName '1.0.0'
+        versionCode 16
+        versionName '1.15.0'
     }
-    buildTypes { release { minifyEnabled false } }
+
+    signingConfigs {
+        release {
+            def ks = file("${System.getenv('RUNNER_TEMP') ?: '/tmp'}/codm-release.jks")
+            if (ks.exists()) {
+                storeFile ks
+                storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'codm-ci'
+                keyAlias System.getenv('KEY_ALIAS') ?: 'codm'
+                keyPassword System.getenv('KEY_PASSWORD') ?: 'codm-ci'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+        }
+    }
 }

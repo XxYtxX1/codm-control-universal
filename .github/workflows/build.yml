@@ -1,36 +1,81 @@
 name: Build CODM Control APK and Universal Module ZIP
+
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
+  release:
+    types: [ published ]
+
 permissions:
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build Android app
+
+      - name: Create temporary release keystore
+        run: |
+          keytool -genkeypair \
+            -alias codm \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -keystore "$RUNNER_TEMP/codm-release.jks" \
+            -storepass codm-ci \
+            -keypass codm-ci \
+            -dname "CN=CODM Control CI, OU=CI, O=CODM Control Project, L=Unknown, ST=Unknown, C=US"
+          echo "KEYSTORE_PASSWORD=codm-ci" >> $GITHUB_ENV
+          echo "KEY_ALIAS=codm" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=codm-ci" >> $GITHUB_ENV
+
+      - name: Build Android app (signed release)
         run: gradle --no-daemon assembleRelease
+        env:
+          KEYSTORE_PASSWORD: codm-ci
+          KEY_ALIAS: codm
+          KEY_PASSWORD: codm-ci
+
+      - name: Locate built APK
+        id: apk
+        run: |
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            APK=app/build/outputs/apk/release/app-release.apk
+          else
+            APK=app/build/outputs/apk/release/app-release-unsigned.apk
+            echo "::warning::Release APK is still unsigned"
+          fi
+          echo "path=$APK" >> $GITHUB_OUTPUT
+          ls -la app/build/outputs/apk/release/
+
       - name: Package APK into KernelSU/Magisk module
         run: |
+          VERSION=$(grep '^version=' module/module.prop | cut -d= -f2 | tr -d '[:space:]')
+          SAFE_VER=$(echo "$VERSION" | tr '.-' '_')
           mkdir -p module/system/app/CODMControl
-          cp app/build/outputs/apk/release/app-release-unsigned.apk module/system/app/CODMControl/CODMControl.apk
+          cp "${{ steps.apk.outputs.path }}" module/system/app/CODMControl/CODMControl.apk
           chmod 0644 module/system/app/CODMControl/CODMControl.apk
+          cp "${{ steps.apk.outputs.path }}" CODM_Control.apk
           cd module
-          zip -qr ../CODM_Ultra_Stretch_v1_15_Universal_App.zip .
+          zip -qr "../CODM_Ultra_Stretch_${SAFE_VER}.zip" .
           cd ..
-          cp app/build/outputs/apk/release/app-release-unsigned.apk CODM_Control.apk
+          ls -la CODM_Control.apk "CODM_Ultra_Stretch_${SAFE_VER}.zip"
+
       - uses: actions/upload-artifact@v4
         with:
           name: CODM-Control-Universal-App-and-Module
           path: |
             CODM_Control.apk
-            CODM_Ultra_Stretch_v1_15_Universal_App.zip
+            CODM_Ultra_Stretch_*.zip
+          if-no-files-found: error

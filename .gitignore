@@ -1,0 +1,12 @@
+*.jks
+*.keystore
+*.iml
+.gradle/
+.idea/
+local.properties
+build/
+app/build/
+*.apk
+!module/system/app/CODMFPS/CODMFPS.apk
+!module/overlay/overlay.apk
+.DS_Store
